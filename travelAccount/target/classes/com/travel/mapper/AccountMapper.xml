@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.travel.mapper.AccountMapper">
+	
+	<!-- 여행 날짜 목록 출력 -->
+	<select id="getTravelDate" resultType="com.travel.domain.TravelDateDTO">
+		SELECT startDate, endDate, travelNo from tbl_travel where travelNo=#{travelNo}
+	</select>
+	
+	<!-- 여행일별 예산/지출 목록 getAccount(String dateTime) -->
+	<select id="getAccount" resultType="com.travel.domain.AccountVO">
+		SELECT
+			accountNo, 
+		    travelNo, 
+		    type, 
+		    title, 
+		    memo, 
+		    money, 
+		    prepMoney, 
+		    method, 
+		    category, 
+		    dateTime,
+		    plat, 
+		    plng,
+		    regDate,
+		    updateDate
+		FROM tbl_account
+		WHERE travelNo=#{travelNo} AND 
+		    (dateTime
+		     BETWEEN TO_DATE('${dateTime} 00:00', 'yyyy-MM-dd hh24:mi') 
+		     AND TO_DATE('${dateTime} 23:59', 'yyyy-MM-dd hh24:mi')
+		    )
+		ORDER BY dateTime
+	</select>
+	
+	
+	<!-- 특정날짜별 총지출 -->
+	<select id="totalByDate" resultType="java.lang.Integer">
+		SELECT SUM(money) FROM tbl_account
+		WHERE travelNo=#{travelNo} AND 
+		    (dateTime
+		     BETWEEN TO_DATE('${dateTime}', 'yyyy-MM-dd hh24:mi') 
+		     AND TO_DATE('${dateTime}', 'yyyy-MM-dd hh24:mi')
+		    )
+	</select>
+
+	<!-- 여행별 총지출 -->
+	<select id="totalExpense" resultType="java.lang.Integer">
+		SELECT SUM(money) FROM tbl_account WHERE travelNo=#{travelNo}
+	</select>
+	
+	<!-- 카테고리별 총지출 비율 -->
+	<select id="totalByCategory" resultType="com.travel.domain.AccountExpenseDTO">
+		select 
+		    category, 
+		    totalCtgr, 
+		    ROUND(RATIO_TO_REPORT(totalCtgr) OVER(), 2) * 100 || '%' AS money_rate
+		from v_total
+	</select>
+	
+	
+	<!-- 지출 등록 -->
+	<insert id="regExp">
+		<selectKey keyProperty="accountNo" order="BEFORE" resultType="long">
+			select sq_account.nextval from dual
+		</selectKey>
+		INSERT INTO 
+			tbl_account(accountNo, travelNo, type, title, memo, money, prepMoney, method, category, dateTime, plat, plng)
+		VALUES 
+			(#{accountNo}, #{travelNo}, 
+			#{type}, #{title}, #{memo}, #{money}, #{prepMoney}, #{method}, #{category}, 
+			TO_DATE(#{dateTime}, 'yyyy-MM-dd hh24:mi'), #{plat}, #{plng})
+	</insert>
+	
+	<!-- 예산/지출 조회 -->
+	<select id="getExp" resultType="com.travel.domain.AccountVO">
+		SELECT * FROM tbl_account WHERE accountNo=#{accountNo }
+	</select>
+	
+	<!-- 지출 수정 -->
+	<update id="updateExp">
+		UPDATE tbl_account
+		SET 
+		    travelNo=#{travelNo}, 
+		    type=1, 
+		    title=#{title}, 
+		    memo=#{memo}, 
+		    money=#{money}, 
+		    prepMoney=#{prepMoney}, 
+		    method=#{method}, 
+		    category=#{category},
+		    dateTime=#{dateTime}, 
+		    plat=#{plat}, 
+		    plng=#{plng},
+		    updateDate=sysdate
+		WHERE accountNo=#{accountNo}
+	</update>
+	
+	<!-- 예산/지출 삭제 -->
+	<delete id="deleteExp">
+		DELETE FROM tbl_account WHERE accountNo=#{accountNo}
+	</delete>
+	
+	<!-- 예산 등록 -->
+	<insert id="regBdg">
+		<selectKey keyProperty="accountNo" order="BEFORE" resultType="long">
+			select sq_account.nextval from dual
+		</selectKey>
+		INSERT INTO tbl_account
+			(accountNo, travelNo, type, title, money, category, dateTime)
+		VALUES 
+			(#{accountNo}, #{travelNo}, #{type}, #{title}, #{money}, '예산', TO_DATE(#{dateTime}, 'yyyy-MM-dd hh24:mi'))
+	</insert>
+
+	<!-- 예산 수정 -->
+	<update id="updateBdg">
+		UPDATE tbl_account
+		SET 
+		    travelNo=#{travelNo}, 
+		    type=0, 
+		    title=#{title}, 
+		    money=#{money}, 
+		    prepMoney=#{prepMoney}, 
+		    dateTime=#{dateTime},
+		    updateDate=sysdate
+		WHERE accountNo=#{accountNo}
+	</update>
+	
+
+</mapper>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.travel.mapper.ReplyMapper">
+	
+	<!-- 댓글 등록 -->
+	<insert id="insert">
+		INSERT INTO tbl_reply (replyNo, boardNo, reply, replyer)
+		VALUES (sq_reply.nextval, #{boardNo}, #{reply}, #{replyer})
+	</insert>
+	
+	<!-- 특정 댓글 조회 -->
+	<select id="get" resultType="com.travel.domain.ReplyVO">
+		SELECT * FROM tbl_reply where replyNo=#{replyNo}
+	</select>
+	
+	<!-- 댓글 수정 -->
+	<update id="update">
+		UPDATE tbl_reply SET reply=#{reply}, updateDate=sysdate 
+		WHERE replyNo=#{replyNo}
+	</update>
+	
+	<!-- 댓글 삭제 -->
+	<delete id="delete">
+		DELETE FROM tbl_reply WHERE replyNo=#{replyNo}
+	</delete>
+	
+	<!-- 댓글 목록 -->
+	<select id="getListWithPaging" resultType="com.travel.domain.ReplyVO">
+		SELECT * FROM tbl_reply 
+		WHERE boardNo=#{boardNo} order by replyNo asc
+	</select>
+	
+</mapper>

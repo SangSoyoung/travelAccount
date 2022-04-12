@@ -1,0 +1,30 @@
+@charset "UTF-8";
+
+.profiles {
+	margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+.profile-link {
+	position: absolute;
+}
+.travelProfile {
+	position: relative;
+    text-align: center;
+    padding-top: 15%;
+}
+.profile-img {
+	width: 600px;
+	height: 250px;
+}
+
+.travelProfile li {
+	list-style: none;
+	color: white;
+	margin: 0.5rem;
+}
+
+#pTitle {
+	font-weight: bold;
+	font-size: 1.5rem;
+}
+
